@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Pomodoro Clock</string>
+    <string name="label_minutes">min.</string>
+    <string name="label_seconds">seg.</string>
 </resources>
