@@ -1,4 +1,6 @@
 # pomodoro-clock
+[![Build status](https://build.appcenter.ms/v0.1/apps/07a3290e-6391-4e6d-ab5e-a1e9223f1535/branches/master/badge)](https://appcenter.ms)
+
 Aplicativo Android para gerenciamento de tempo utilizando a técnica Pomodoro. 
 
 Inspirado em: https://github.com/florinpop17/app-ideas. 
