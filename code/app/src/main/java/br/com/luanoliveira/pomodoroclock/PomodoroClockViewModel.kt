@@ -11,6 +11,14 @@ class PomodoroClockViewModel : ViewModel() {
         MutableLiveData<String>()
     }
 
+    val clockState: MutableLiveData<ClockState> by lazy {
+        MutableLiveData<ClockState>()
+    }
+
+    val sessionState: MutableLiveData<SessionState> by lazy {
+        MutableLiveData<SessionState>()
+    }
+
     private lateinit var workingSession : CountDownTimer
     private lateinit var breakSession : CountDownTimer
 
@@ -19,30 +27,50 @@ class PomodoroClockViewModel : ViewModel() {
     private val intervalTick: Long
 
     init{
-        currentTime.value = ""
-        workingSessionMillis = 1800000
+        clockState.value = ClockState.STOPPED
+        sessionState.value = SessionState.NONE
+        workingSessionMillis = 1500000
         breakSessionMillis = 300000
         intervalTick = 1000
+        currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
     }
 
     fun onPlay(){
+        clockState.value = ClockState.STARTED
         startWorkingSession(workingSessionMillis)
     }
 
+    fun onPause(){
+        clockState.value = ClockState.PAUSED
+    }
+
     fun onStop(){
-        TODO()
+        clockState.value = ClockState.STOPPED
+
+        val session:CountDownTimer = if (sessionState == SessionState.WORKING){
+            workingSession
+        } else {
+            breakSession
+        }
+
+        stopSession(session);
+
+        currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
     }
 
     fun onRestart(){
-        TODO()
+        onStop()
+        onPlay()
     }
 
     private fun startWorkingSession(remainingTime: Long){
+        sessionState.value = SessionState.WORKING
+
         workingSession = object : CountDownTimer(remainingTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
                 val duration = Duration.ofMillis(millisUntilFinished)
-                currentTime.setValue(convertDurationToTime(duration))
+                currentTime.value = convertDurationToTime(duration)
             }
 
             override fun onFinish() {
@@ -54,18 +82,25 @@ class PomodoroClockViewModel : ViewModel() {
     }
 
     private fun startBreakSession(remainingTime: Long){
+        sessionState.value = SessionState.BREAK
+
         breakSession = object : CountDownTimer(remainingTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
                 val duration = Duration.ofMillis(millisUntilFinished)
-                currentTime.setValue(convertDurationToTime(duration))
+                currentTime.value = convertDurationToTime(duration)
             }
 
             override fun onFinish() {
+                sessionState.value = SessionState.NONE
             }
         }
 
         breakSession.start();
+    }
+
+    private fun stopSession(session: CountDownTimer){
+        session.cancel()
     }
 
     private fun convertDurationToTime(duration: Duration) : String {

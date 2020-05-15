@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         val timeObserver = Observer<String> {newTime ->
             binding.timer.text = newTime
         }
+
         viewModel.currentTime.observe(this, timeObserver)
 
         binding.viewmodel = viewModel

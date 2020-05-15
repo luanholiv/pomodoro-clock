@@ -10,6 +10,7 @@
             type="br.com.luanoliveira.pomodoroclock.PomodoroClockViewModel" />
 
         <import type="android.view.View"/>
+        <import type="br.com.luanoliveira.pomodoroclock.ClockState"/>
 
     </data>
 
