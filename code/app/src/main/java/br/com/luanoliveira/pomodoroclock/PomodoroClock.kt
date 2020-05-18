@@ -14,25 +14,15 @@ class PomodoroClock (
         MutableLiveData<String>()
     }
 
-    var isClockStarted: Boolean = false
-    var isClockPaused: Boolean = false
-    var isClockStopped: Boolean = true
-
-
-    private lateinit var workingSession : CountDownTimer
-    private lateinit var breakSession : CountDownTimer
-    private var currentSession: CountDownTimer
+    private lateinit var currentSession: CountDownTimer
 
     init{
         currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
-
         createWorkingSession(workingSessionMillis)
-        currentSession = workingSession
-
     }
 
     fun start() {
-        currentSession.start()
+        startCurrentSession()
     }
 
     fun pause() {
@@ -40,18 +30,18 @@ class PomodoroClock (
     }
 
     fun restart() {
-        currentSession.cancel()
+        stopCurrentSession()
         createWorkingSession(workingSessionMillis)
-        currentSession.start()
+        startCurrentSession()
     }
 
     fun stop() {
-        currentSession.cancel()
+        stopCurrentSession()
         currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
     }
 
     private fun createWorkingSession(remainingTime: Long) {
-        workingSession = object : CountDownTimer(remainingTime, intervalTick) {
+        currentSession = object : CountDownTimer(remainingTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
                 val duration = Duration.ofMillis(millisUntilFinished)
@@ -59,14 +49,15 @@ class PomodoroClock (
             }
 
             override fun onFinish() {
+                stopCurrentSession()
                 createBreakSession(breakSessionMillis)
-                startSession(breakSession)
+                startCurrentSession()
             }
         }
     }
 
     private fun createBreakSession(remainingTime: Long){
-        breakSession = object : CountDownTimer(remainingTime, intervalTick) {
+        currentSession = object : CountDownTimer(remainingTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
                 val duration = Duration.ofMillis(millisUntilFinished)
@@ -74,17 +65,29 @@ class PomodoroClock (
             }
 
             override fun onFinish() {
+                stopCurrentSession()
+                createWorkingSession(workingSessionMillis)
             }
         }
     }
 
-    private fun startSession(timer: CountDownTimer){
-        timer.start();
+    private fun startCurrentSession(){
+        currentSession.start()
+    }
+
+    private fun stopCurrentSession(){
+        currentSession.cancel()
     }
 
     private fun convertDurationToTime(duration: Duration) : String {
-        return String.format("%02d:%02d",
-            duration.toMinutes(),
-            duration.seconds % (duration.toMinutes() * 60))
+        val minutes = duration.toMinutes()
+        val seconds = if (minutes > 0)
+        {
+            duration.seconds % (duration.toMinutes() * 60)
+        } else {
+            duration.seconds
+        }
+
+        return String.format("%02d:%02d", minutes, seconds)
     }
 }
