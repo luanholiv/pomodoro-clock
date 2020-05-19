@@ -1,76 +1,40 @@
 package br.com.luanoliveira.pomodoroclock
 
-import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.time.Duration
 
 class PomodoroClockViewModel : ViewModel() {
-
-    val currentTime: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
-
-    private lateinit var workingSession : CountDownTimer
-    private lateinit var breakSession : CountDownTimer
-
-    private var workingSessionMillis: Long
-    private val breakSessionMillis: Long
-    private val intervalTick: Long
+    private val workingSessionMillis: Long = 1500000
+    private val breakSessionMillis: Long= 300000
+    private val intervalTick: Long= 1000
+    private val pomodoroClock: PomodoroClock
 
     init{
-        currentTime.value = ""
-        workingSessionMillis = 1800000
-        breakSessionMillis = 300000
-        intervalTick = 1000
+        pomodoroClock = PomodoroClock(workingSessionMillis, breakSessionMillis, intervalTick)
     }
 
+    val currentTime: MutableLiveData<String>
+        get () = pomodoroClock.currentTime
+
+    val isWorkingSession: MutableLiveData<Boolean>
+        get () = pomodoroClock.isWorkingSession
+
+    val isPaused: MutableLiveData<Boolean>
+        get () = pomodoroClock.isPaused
+
     fun onPlay(){
-        startWorkingSession(workingSessionMillis)
+        pomodoroClock.start()
+    }
+
+    fun onPause(){
+        pomodoroClock.pause()
     }
 
     fun onStop(){
-        TODO()
+        pomodoroClock.stop()
     }
 
     fun onRestart(){
-        TODO()
-    }
-
-    private fun startWorkingSession(remainingTime: Long){
-        workingSession = object : CountDownTimer(remainingTime, intervalTick) {
-
-            override fun onTick(millisUntilFinished: Long) {
-                val duration = Duration.ofMillis(millisUntilFinished)
-                currentTime.setValue(convertDurationToTime(duration))
-            }
-
-            override fun onFinish() {
-                startBreakSession(breakSessionMillis)
-            }
-        }
-
-        workingSession.start();
-    }
-
-    private fun startBreakSession(remainingTime: Long){
-        breakSession = object : CountDownTimer(remainingTime, intervalTick) {
-
-            override fun onTick(millisUntilFinished: Long) {
-                val duration = Duration.ofMillis(millisUntilFinished)
-                currentTime.setValue(convertDurationToTime(duration))
-            }
-
-            override fun onFinish() {
-            }
-        }
-
-        breakSession.start();
-    }
-
-    private fun convertDurationToTime(duration: Duration) : String {
-        return String.format("%02d:%02d",
-            duration.toMinutes(),
-            duration.seconds % (duration.toMinutes() * 60))
+        pomodoroClock.restart()
     }
 }
