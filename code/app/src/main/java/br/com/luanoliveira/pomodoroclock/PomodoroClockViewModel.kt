@@ -16,6 +16,12 @@ class PomodoroClockViewModel : ViewModel() {
     val currentTime: MutableLiveData<String>
         get () = pomodoroClock.currentTime
 
+    val isWorkingSession: MutableLiveData<Boolean>
+        get () = pomodoroClock.isWorkingSession
+
+    val isPaused: MutableLiveData<Boolean>
+        get () = pomodoroClock.isPaused
+
     fun onPlay(){
         pomodoroClock.start()
     }

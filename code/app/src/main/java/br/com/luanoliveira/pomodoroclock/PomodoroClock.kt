@@ -14,10 +14,21 @@ class PomodoroClock (
         MutableLiveData<String>()
     }
 
-    private lateinit var currentSession: CountDownTimer
+    val isWorkingSession: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
+    }
 
-    init{
+    val isPaused: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
+    }
+
+    private lateinit var currentSession: CountDownTimer
+    private var remainingTime: Long
+
+    init {
         currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
+        isWorkingSession.value = true
+        remainingTime = workingSessionMillis
         createWorkingSession(workingSessionMillis)
     }
 
@@ -26,7 +37,7 @@ class PomodoroClock (
     }
 
     fun pause() {
-
+        pauseCurrentSession()
     }
 
     fun restart() {
@@ -40,10 +51,11 @@ class PomodoroClock (
         currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
     }
 
-    private fun createWorkingSession(remainingTime: Long) {
-        currentSession = object : CountDownTimer(remainingTime, intervalTick) {
+    private fun createWorkingSession(totalTime: Long) {
+        currentSession = object : CountDownTimer(totalTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
+                remainingTime = millisUntilFinished
                 val duration = Duration.ofMillis(millisUntilFinished)
                 currentTime.value = convertDurationToTime(duration)
             }
@@ -54,12 +66,15 @@ class PomodoroClock (
                 startCurrentSession()
             }
         }
+
+        isWorkingSession.value = true;
     }
 
-    private fun createBreakSession(remainingTime: Long){
-        currentSession = object : CountDownTimer(remainingTime, intervalTick) {
+    private fun createBreakSession(totalTime: Long) {
+        currentSession = object : CountDownTimer(totalTime, intervalTick) {
 
             override fun onTick(millisUntilFinished: Long) {
+                remainingTime = millisUntilFinished
                 val duration = Duration.ofMillis(millisUntilFinished)
                 currentTime.value = convertDurationToTime(duration)
             }
@@ -69,14 +84,29 @@ class PomodoroClock (
                 createWorkingSession(workingSessionMillis)
             }
         }
+
+        isWorkingSession.value = false;
     }
 
-    private fun startCurrentSession(){
+    private fun startCurrentSession() {
+        isPaused.value = false
         currentSession.start()
     }
 
-    private fun stopCurrentSession(){
+    private fun stopCurrentSession() {
+        isPaused.value = true
         currentSession.cancel()
+    }
+
+    private fun pauseCurrentSession() {
+        isPaused.value = true
+        currentSession.cancel()
+
+        if (isWorkingSession.value == true) {
+            createWorkingSession(remainingTime)
+        } else {
+            createBreakSession((remainingTime))
+        }
     }
 
     private fun convertDurationToTime(duration: Duration) : String {
