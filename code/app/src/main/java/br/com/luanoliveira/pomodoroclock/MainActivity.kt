@@ -30,8 +30,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val sessionCountObserver = Observer<Int> { sessionCount ->
+            binding.labelSessionCount.text = getString(R.string.session_value, sessionCount)
+        }
+
         viewModel.currentTime.observe(this, timeObserver)
         viewModel.isPaused.observe(this, pauseStateObserver)
+        viewModel.breakSessionCount.observe(this, sessionCountObserver)
 
         binding.viewmodel = viewModel
 
