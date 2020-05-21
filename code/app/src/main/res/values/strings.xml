@@ -1,11 +1,16 @@
 <resources>
     <string name="app_name">Pomodoro Clock</string>
     <string name="label_minutes">min.</string>
-    <string name="label_seconds">seg.</string>
+    <string name="label_seconds">sec.</string>
+    <string name="label_session">Session</string>
+
+    <string name="session_value">%1$d/4</string>
 
     <string name="default_time">00:00</string>
 
     <string name="content_description_play_button">Play</string>
     <string name="content_description_stop_button">Stop</string>
     <string name="content_description_restart_button">Restart</string>
+
+
 </resources>

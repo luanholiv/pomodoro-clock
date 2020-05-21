@@ -6,8 +6,9 @@ import java.time.Duration
 
 class PomodoroClock (
         private val workingSessionMillis: Long,
-        val breakSessionMillis: Long,
-        val intervalTick: Long
+        private val breakSessionMillis: Long,
+        private val longBreakSessionMillis: Long,
+        private val intervalTick: Long
     ) {
 
     val currentTime: MutableLiveData<String> by lazy {
@@ -18,8 +19,12 @@ class PomodoroClock (
         MutableLiveData<Boolean>()
     }
 
-    val isPaused: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
+    val isPaused = MutableLiveData<Boolean>().apply{
+        value = true
+    }
+
+    val breakSessionCount = MutableLiveData<Int>().apply{
+        value = 0
     }
 
     private lateinit var currentSession: CountDownTimer
@@ -27,7 +32,6 @@ class PomodoroClock (
 
     init {
         currentTime.value = convertDurationToTime(Duration.ofMillis(workingSessionMillis))
-        isWorkingSession.value = true
         remainingTime = workingSessionMillis
         createWorkingSession(workingSessionMillis)
     }
@@ -62,7 +66,14 @@ class PomodoroClock (
 
             override fun onFinish() {
                 stopCurrentSession()
-                createBreakSession(breakSessionMillis)
+
+                if (breakSessionCount.value == 4) {
+                    createBreakSession(longBreakSessionMillis)
+                }
+                else {
+                    createBreakSession(breakSessionMillis)
+                }
+
                 startCurrentSession()
             }
         }
@@ -81,7 +92,12 @@ class PomodoroClock (
 
             override fun onFinish() {
                 stopCurrentSession()
+                increaseBreakSessionCount()
                 createWorkingSession(workingSessionMillis)
+
+                if (breakSessionCount.value == 5) {
+                    resetBreakSessionCount()
+                }
             }
         }
 
@@ -107,6 +123,14 @@ class PomodoroClock (
         } else {
             createBreakSession((remainingTime))
         }
+    }
+
+    private fun increaseBreakSessionCount() {
+        breakSessionCount.value?.let { a -> breakSessionCount.value = a + 1 }
+    }
+
+    private fun resetBreakSessionCount() {
+        breakSessionCount.value = 0
     }
 
     private fun convertDurationToTime(duration: Duration) : String {

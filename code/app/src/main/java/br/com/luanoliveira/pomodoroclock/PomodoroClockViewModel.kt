@@ -4,13 +4,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class PomodoroClockViewModel : ViewModel() {
-    private val workingSessionMillis: Long = 1500000
-    private val breakSessionMillis: Long= 300000
+    private val workingSessionMillis: Long = 15000
+    private val breakSessionMillis: Long = 3000
+    private val longBreakSessionMillis: Long = 6000
     private val intervalTick: Long= 1000
     private val pomodoroClock: PomodoroClock
 
     init{
-        pomodoroClock = PomodoroClock(workingSessionMillis, breakSessionMillis, intervalTick)
+        pomodoroClock = PomodoroClock(workingSessionMillis, breakSessionMillis, longBreakSessionMillis, intervalTick)
     }
 
     val currentTime: MutableLiveData<String>
@@ -21,6 +22,9 @@ class PomodoroClockViewModel : ViewModel() {
 
     val isPaused: MutableLiveData<Boolean>
         get () = pomodoroClock.isPaused
+
+    val breakSessionCount: MutableLiveData<Int>
+        get () = pomodoroClock.breakSessionCount
 
     fun onPlay(){
         pomodoroClock.start()
